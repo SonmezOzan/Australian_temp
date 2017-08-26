@@ -1,0 +1,10 @@
+name: AustraliaTemperatureData
+account: changepointappozan
+server: shinyapps.io
+appId: 151233
+bundleId: 680373
+url: https://changepointappozan.shinyapps.io/AustraliaTemperatureData/
+when: 1484519028.70861
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: Dashboard.R

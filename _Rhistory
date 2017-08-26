@@ -1,0 +1,512 @@
+sarima(a, 4,0,1)
+auto.arima(a)
+sarima(a, 4,0,1, s=0)
+sarima(a, 4,0,1, S=0)
+data = nottem
+data
+plot(decompose(data)$seasonal)
+plot(decompose(data)$trend)
+dd = decompose(data)$random
+auto.arima(dd)
+sarima(dd, 5,0,0,2,0,0,12)
+dd
+acf(dd)
+acf(dd[!is.na(dd)])
+pacf(dd[!is.na(dd)])
+plot(data)
+plot(diff(log(data)))
+auto.arima(diff(log(data)))
+sarima(diff(log(data)), 4,0,1)
+auto.arima(diff(data))
+sarima(diff(data), 2,0,0,1,0,0,12)
+plot(data)
+plot(nottem)
+stl(nottem)
+stl(nottem, 12)
+stl(nottem, 12)$Components[,3]
+stl(nottem, 12)$Components
+kk = stl(nottem, 12)
+aa = kk$time.series[,3]
+plot(aa)
+acf(aa)
+pacf(aa)
+data = nottem
+dd = decompose(data)$random
+aa = decompos(dd)$random
+aa = decompose(dd)$random
+data = nottem
+dd = decompose(data)$random
+aa = decompose(dd)$random
+plot(aa)
+auto.arima(aa)
+sarima(aa, 5,0,0,2,0,0,12)
+sarima(data, 1,0,0,0,0,0,12)
+auto.arima(aa)
+auto.arima(data)
+dd = data - decompose(data)$trend
+auto.arima(dd)
+sarima(data, 5,0,0,1,0,0,12)
+?biglm
+??biglm
+?arma.spec
+??arma.spec
+library(astsa)
+arma.spec(ma=0.5)
+6/100
+7.5/128
+new.d = x + rnorm(100,0,5)
+library(fda)
+#generate functional data and orthogonal basis
+functionaldata = function(n, D, Sigma, tune){
+basis = create.bspline.basis(rangeval=c(0, 1), norder=3, nbasis=D)
+coef = matrix(0,D,n)
+for (i in 1:n){
+coef[,i] = rt(D2)
+}
+fdata = fd(coef,basis)
+par = fdPar(basis, lambda=tune)
+sim.data = smooth.fd(fdata, par)
+return(sim.data)
+}
+Sigma1 = sapply(1:21, function(l) l^(-1))
+Sigma2 = sapply(1:21, function(l) 1.2^(-l))
+method = function(n, Sigma, theta, c, d){
+basis = create.bspline.basis(rangeval=c(0, 1), norder=3, nbasis=21)
+dataa = functionaldata(n=n, D=21, Sigma=Sigma, tune=0.01)
+Fpca=pca.fd(dataa, nharm=21, centerfns=TRUE)
+efun= Fpca$harmonics
+x = theta*n
+fdata = dataa$coef
+for (i in (x+1):n){
+fdata[,i] = dataa[i]$coef + c*sum(efun[(d+1):(d+3)])$coef
+}
+fdata = fd(fdata, basis)
+Fpca=pca.fd(fdata, nharm=21, centerfns=TRUE)
+eta = Fpca$scores[,1:d]
+Sigma = matrix(0,d,d)
+for (i in 1:d){
+Sigma[i,i] = Fpca$values[i]
+}
+if (d==1){
+Kappa = function(k){
+if (k==1){
+eta[1]-mean(eta)
+} else {
+sum(eta[1:k])-k*mean(eta)
+}
+}
+} else {
+Kappa = function(k){
+if (k==1){
+eta[1,]-colMeans(eta)
+} else {
+colSums(eta[1:k,])-k*colMeans(eta)
+}
+}
+}
+Q = function(k){
+1/n*t(Kappa(k))%*%solve(Sigma)%*%Kappa(k)
+}
+val = sapply(1:n, function(k) Q(k))
+k.hat = which.max(val)
+#change point estimation without dimensiion reduction
+S.n.k = function(k){
+1/sqrt(n)*(sum(fdata[1:k])-k*mean(fdata))
+}
+vall = sapply(1:n, function(k) sqrt(inprod(S.n.k(k),S.n.k(k))))
+k.hatt = which.max(vall)
+return(c(k.hat,k.hatt))
+}
+#we choose d=3 since it explains roughly 75% of the variation
+s21 = sapply(1:1000, function(l) method(n=100, Sigma=Sigma2, theta=0.5, c=0.01, d=3))
+s22 = sapply(1:1000, function(l) method(n=100, Sigma=Sigma2, theta=0.5, c=0.05, d=3))
+s23 = sapply(1:1000, function(l) method(n=100, Sigma=Sigma2, theta=0.5, c=0.1, d=3))
+s24 = sapply(1:1000, function(l) method(n=100, Sigma=Sigma2, theta=0.5, c=0.5, d=3))
+library(fda)
+#generate functional data and orthogonal basis
+functionaldata = function(n, D, Sigma, tune){
+basis = create.bspline.basis(rangeval=c(0, 1), norder=3, nbasis=D)
+coef = matrix(0,D,n)
+for (i in 1:n){
+coef[,i] = rt(D,2)
+}
+fdata = fd(coef,basis)
+par = fdPar(basis, lambda=tune)
+sim.data = smooth.fd(fdata, par)
+return(sim.data)
+}
+Sigma1 = sapply(1:21, function(l) l^(-1))
+Sigma2 = sapply(1:21, function(l) 1.2^(-l))
+method = function(n, Sigma, theta, c, d){
+basis = create.bspline.basis(rangeval=c(0, 1), norder=3, nbasis=21)
+dataa = functionaldata(n=n, D=21, Sigma=Sigma, tune=0.01)
+Fpca=pca.fd(dataa, nharm=21, centerfns=TRUE)
+efun= Fpca$harmonics
+x = theta*n
+fdata = dataa$coef
+for (i in (x+1):n){
+fdata[,i] = dataa[i]$coef + c*sum(efun[(d+1):(d+3)])$coef
+}
+fdata = fd(fdata, basis)
+Fpca=pca.fd(fdata, nharm=21, centerfns=TRUE)
+eta = Fpca$scores[,1:d]
+Sigma = matrix(0,d,d)
+for (i in 1:d){
+Sigma[i,i] = Fpca$values[i]
+}
+if (d==1){
+Kappa = function(k){
+if (k==1){
+eta[1]-mean(eta)
+} else {
+sum(eta[1:k])-k*mean(eta)
+}
+}
+} else {
+Kappa = function(k){
+if (k==1){
+eta[1,]-colMeans(eta)
+} else {
+colSums(eta[1:k,])-k*colMeans(eta)
+}
+}
+}
+Q = function(k){
+1/n*t(Kappa(k))%*%solve(Sigma)%*%Kappa(k)
+}
+val = sapply(1:n, function(k) Q(k))
+k.hat = which.max(val)
+#change point estimation without dimensiion reduction
+S.n.k = function(k){
+1/sqrt(n)*(sum(fdata[1:k])-k*mean(fdata))
+}
+vall = sapply(1:n, function(k) sqrt(inprod(S.n.k(k),S.n.k(k))))
+k.hatt = which.max(vall)
+return(c(k.hat,k.hatt))
+}
+#we choose d=3 since it explains roughly 75% of the variation
+s21 = sapply(1:1000, function(l) method(n=100, Sigma=Sigma2, theta=0.5, c=0.01, d=3))
+method(n=100, Sigma=Sigma2, theta=0.5, c=0.01, d=3)
+method(n=100, Sigma=Sigma2, theta=0.5, c=0.01, d=3)
+Sigma=Sigma2, theta=0.5, c=0.5, d=3)
+method(n=100, Sigma=Sigma2, theta=0.5, c=0.5, d=3)
+method(n=100, Sigma=Sigma2, theta=0.5, c=0.5, d=3)
+method(n=100, Sigma=Sigma2, theta=0.5, c=0.5, d=3)
+method(n=100, Sigma=Sigma2, theta=0.5, c=0.1, d=3)
+method(n=100, Sigma=Sigma2, theta=0.5, c=0.1, d=3)
+method(n=100, Sigma=Sigma2, theta=0.5, c=0.1, d=3)
+snr.hat = function(fdata){
+n = ncol(fdata$coefs)
+D = nrow(fdata$coefs)
+khat = k.star2(fdata)
+m.b = mean.fd(fdata[1:khat])
+m.a = mean.fd(fdata[(khat+1):n])
+delta = m.a - m.b
+theta = khat/n
+K_0 = cov(t(fdata$coefs))
+K_A = K_0 + theta*(1-theta)*delta$coefs%*%t(delta$coefs)
+val = c()
+for (i in 1:khat){
+val[i] = inprod(fdata[i]-m.b, fdata[i]-m.b)
+}
+for (j in (1+khat):n){
+val[j] = inprod(fdata[j]-m.a, fdata[j]-m.a)
+}
+norM = sum(val)/n
+theta*(1-theta)*inprod(delta, delta)
+}
+shinyApp(ui, server)
+library(shiny); print(source('Downloads/try.Dashboard.R')$value)
+install.packages("shinydashboard")
+print(source('Downloads/try.Dashboard.R')$value)
+print(source('Downloads/try.Dashboard.R')$value)
+print(source('Downloads/try.Dashboard.R')$value)
+print(source('Downloads/try.Dashboard.R')$value)
+print(source('Downloads/try.Dashboard.R')$value)
+library(shiny); print(source('Desktop/Shiny Data Example/Dashboard.R')$value)
+getwd()
+setwd("~/Desktop/Shiny Data Example")
+print(source('Dashboard.R')$value)
+print(source('Dashboard.R')$value)
+print(source('Dashboard.R')$value)
+setwd("~/Desktop/shiny data others")
+source("~/Documents/ChangePoint Paper/editted/CP_Detection.R")
+source("~/Documents/ChangePoint Paper/editted/ArgMaxDist.R")
+source("~/Documents/ChangePoint Paper/editted/CI.Quantile.R")
+source("~/Documents/ChangePoint Paper/editted/testing.R")
+source("~/Documents/ChangePoint Paper/editted/LongRunCovMatrix.R")
+# --------------------------------------------------------------------------
+#------------------------- Data Sets -------------------------------------
+# --------------------------------------------------------------------------
+########################
+## TEMPERATURE ########
+#######################
+library(fda)
+library(dplyr)
+library(reshape2)
+#---- read the data for different stations:
+fun_data_S = read.csv("MinTempSydney_Data.csv")
+fun_data_M = read.csv("IDCJAC0011_086071_1800_Data.csv")
+fun_data_B = read.csv("MinTempBoulia_Data.csv")
+fun_data_C = read.csv("MinTempCape_Otway_Data.csv")
+fun_data_Ga = read.csv("MinTempGayndah_Data.csv")
+fun_data_Gu = read.csv("MinTempGunnedah_Data.csv")
+fun_data_H = read.csv("MinTempHobart_Data.csv")
+fun_data_R = read.csv("MinTempRobe_Data.csv")
+# vectorize the data based on year-month
+fun_data_S$md = with(fun_data_S, paste(Month, Day, sep="_"))
+fun_data_M$md = with(fun_data_M, paste(Month, Day, sep="_"))
+fun_data_B$md = with(fun_data_B, paste(Month, Day, sep="_"))
+fun_data_C$md = with(fun_data_C, paste(Month, Day, sep="_"))
+fun_data_Ga$md = with(fun_data_Ga, paste(Month, Day, sep="_"))
+fun_data_Gu$md = with(fun_data_Gu, paste(Month, Day, sep="_"))
+fun_data_H$md = with(fun_data_H, paste(Month, Day, sep="_"))
+fun_data_R$md = with(fun_data_R, paste(Month, Day, sep="_"))
+# get rid of NAs
+nas = which(is.na(fun_data_S$Days.of.accumulation.of.minimum.temperature))
+fun_data_S = fun_data_S[-nas, ]
+nas = which(is.na(fun_data_M$Days.of.accumulation.of.minimum.temperature))
+fun_data_M = fun_data_M[-nas, ]
+nas = which(is.na(fun_data_B$Days.of.accumulation.of.minimum.temperature))
+fun_data_B = fun_data_B[-nas, ]
+nas = which(is.na(fun_data_C$Days.of.accumulation.of.minimum.temperature))
+fun_data_C = fun_data_C[-nas, ]
+nas = which(is.na(fun_data_Ga$Days.of.accumulation.of.minimum.temperature))
+fun_data_Ga = fun_data_Ga[-nas, ]
+nas = which(is.na(fun_data_Gu$Days.of.accumulation.of.minimum.temperature))
+fun_data_Gu = fun_data_Gu[-nas, ]
+nas = which(is.na(fun_data_H$Days.of.accumulation.of.minimum.temperature))
+fun_data_H = fun_data_H[-nas, ]
+nas = which(is.na(fun_data_R$Days.of.accumulation.of.minimum.temperature))
+fun_data_R = fun_data_R[-nas, ]
+dataS = dcast(fun_data_S, formula = md~ Year, value.var = "Minimum.temperature..Degree.C.")[,-1]
+dataM = dcast(fun_data_M, formula = md~ Year, value.var = "Minimum.temperature..Degree.C.")[,-1]
+dataB = dcast(fun_data_B, formula = md~ Year, value.var = "Minimum.temperature..Degree.C.")[,-1]
+dataC = dcast(fun_data_C, formula = md~ Year, value.var = "Minimum.temperature..Degree.C.")[,-1]
+dataGa = dcast(fun_data_Ga, formula = md~ Year, value.var = "Minimum.temperature..Degree.C.")[,-1]
+dataGu = dcast(fun_data_Gu, formula = md~ Year, value.var = "Minimum.temperature..Degree.C.")[,-1]
+dataH = dcast(fun_data_H, formula = md~ Year, value.var = "Minimum.temperature..Degree.C.")[,-1]
+dataR = dcast(fun_data_R, formula = md~ Year, value.var = "Minimum.temperature..Degree.C.")[,-1]
+D=21
+basis = create.fourier.basis(rangeval = c(0, 1), nbasis = D)
+mat.S = matrix(0, D, ncol(dataS))
+mat.M = matrix(0, D, ncol(dataM))
+mat.B = matrix(0, D, ncol(dataB))
+mat.C = matrix(0, D, ncol(dataC))
+mat.Ga = matrix(0, D, ncol(dataGa))
+mat.Gu = matrix(0, D, ncol(dataGu))
+mat.H = matrix(0, D, ncol(dataH))
+mat.R = matrix(0, D, ncol(dataR))
+for (i in 1:ncol(dataS)){
+vec = dataS[,i][!(is.na(dataS[,i]))]
+f_Obs = Data2fd(argvals=seq(0, 1, length = length(vec)) , vec, basisobj = basis)
+mat.S[, i] = f_Obs$coefs
+}
+for (i in 1:ncol(dataM)){
+vec = dataM[,i][!(is.na(dataM[,i]))]
+f_Obs = Data2fd(argvals=seq(0, 1, length = length(vec)) , vec, basisobj = basis)
+mat.M[, i] = f_Obs$coefs
+}
+for (i in 1:ncol(dataB)){
+vec = dataB[,i][!(is.na(dataB[,i]))]
+f_Obs = Data2fd(argvals=seq(0, 1, length = length(vec)) , vec, basisobj = basis)
+mat.B[, i] = f_Obs$coefs
+}
+for (i in 1:ncol(dataC)){
+vec = dataC[,i][!(is.na(dataC[,i]))]
+f_Obs = Data2fd(argvals=seq(0, 1, length = length(vec)) , vec, basisobj = basis)
+mat.C[, i] = f_Obs$coefs
+}
+for (i in 1:ncol(dataGa)){
+vec = dataGa[,i][!(is.na(dataGa[,i]))]
+f_Obs = Data2fd(argvals=seq(0, 1, length = length(vec)) , vec, basisobj = basis)
+mat.Ga[, i] = f_Obs$coefs
+}
+for (i in 1:ncol(dataGu)){
+vec = dataGu[,i][!(is.na(dataGu[,i]))]
+f_Obs = Data2fd(argvals=seq(0, 1, length = length(vec)) , vec, basisobj = basis)
+mat.Gu[, i] = f_Obs$coefs
+}
+for (i in 1:ncol(dataH)){
+vec = dataH[,i][!(is.na(dataH[,i]))]
+f_Obs = Data2fd(argvals=seq(0, 1, length = length(vec)) , vec, basisobj = basis)
+mat.H[, i] = f_Obs$coefs
+}
+for (i in 1:ncol(dataR)){
+vec = dataR[,i][!(is.na(dataR[,i]))]
+f_Obs = Data2fd(argvals=seq(0, 1, length = length(vec)) , vec, basisobj = basis)
+mat.R[, i] = f_Obs$coefs
+}
+fdata_S = fd(mat.S, basis)
+fdata_M = fd(mat.M, basis)
+fdata_B = fd(mat.B, basis)
+fdata_C = fd(mat.C, basis)
+fdata_Ga = fd(mat.Ga, basis)
+fdata_Gu = fd(mat.Gu, basis)
+fdata_H = fd(mat.H, basis)
+fdata_R = fd(mat.R, basis)
+dtable = function(fdata, ddata){
+dp = Change.point.q(fdata, h=0, L=21, alpha=0.05, basis=basis)
+year = colnames(ddata)[floor(dp)]
+dat = t(data.frame(DP = dp, Year = year))
+colnames(dat) = c("Lower CI", "Change", "Upper CI")
+rownames(dat) = c("Data Point", "Corresponding Year")
+return(dat)
+}
+FF.S = dtable(fdata_S, dataS)
+FF.M = dtable(fdata_M, dataM)
+FF.B = dtable(fdata_B, dataB)
+FF.C = dtable(fdata_C, dataC)
+FF.Ga = dtable(fdata_Ga, dataGa)
+FF.Gu = dtable(fdata_Gu, dataGu)
+FF.H = dtable(fdata_H, dataH)
+FF.R = dtable(fdata_R, dataR)
+fpca.est = function(fdata, ddata){
+fpca = sapply(1:21, function(d) k.star1(fdata, d))
+Fpca = pca.fd(fdata, nharm=21, centerfns=TRUE)
+l = Fpca$values
+tve = sapply(1:21, function(d) sum(l[1:d])/sum(l))
+dat = data.frame(d=1:21, TVE = tve, fPCA=fpca, Year = colnames(ddata)[fpca])
+colnames(dat)[3] = c("fPCA estiamte")
+return(dat)
+}
+fpca.S = fpca.est(fdata_S, dataS)
+fpca.M = fpca.est(fdata_M, dataM)
+fpca.B = fpca.est(fdata_B, dataB)
+fpca.C = fpca.est(fdata_C, dataC)
+fpca.Ga = fpca.est(fdata_Ga, dataGa)
+fpca.Gu = fpca.est(fdata_Gu, dataGu)
+fpca.H = fpca.est(fdata_H, dataH)
+fpca.R = fpca.est(fdata_R, dataR)
+# testing the Change
+p.S = Tn.D1(fdata_S, 1000, basis, h=2)
+p.M = Tn.D1(fdata_M, 1000, basis, h=2)
+p.B = Tn.D1(fdata_B, 1000, basis, h=2)
+p.C = Tn.D1(fdata_C, 1000, basis, h=2)
+p.Ga = Tn.D1(fdata_Ga, 1000, basis, h=2)
+p.Gu = Tn.D1(fdata_Gu, 1000, basis, h=2)
+p.H = Tn.D1(fdata_H, 1000, basis, h=2)
+p.R = Tn.D1(fdata_R, 1000, basis, h=2)
+barp = function(fdata, ks){
+change = mean(fdata[(ks+1):ncol(fdata$coefs)])-mean(fdata[1:(ks)])
+pii = function(l){
+Fpca = pca.fd(fdata, nharm=21, centerfns=TRUE)
+v = Fpca$harmonics
+inprod(change,v[l])^2/inprod(change,change)
+}
+p.i = sapply(1:10, function(k) pii(k))
+}
+barpS = barp(fdata_S, k.star2(fdata_S))
+barpM = barp(fdata_M, k.star2(fdata_M))
+barpB = barp(fdata_B, k.star2(fdata_B))
+barpC = barp(fdata_C, k.star2(fdata_C))
+barpGa = barp(fdata_Ga, k.star2(fdata_Ga))
+barpGu = barp(fdata_Gu, k.star2(fdata_Gu))
+barpH = barp(fdata_H, k.star2(fdata_H))
+barpR = barp(fdata_R, k.star2(fdata_R))
+CC = function(fdata, ks){
+change = mean(fdata[(ks+1):ncol(fdata$coefs)])-mean(fdata[1:(ks)])
+change
+}
+deltaS = CC(fdata_S, k.star2(fdata_S))
+deltaM = CC(fdata_M, k.star2(fdata_M))
+deltaB = CC(fdata_B, k.star2(fdata_B))
+deltaC = CC(fdata_C, k.star2(fdata_C))
+deltaGa = CC(fdata_Ga, k.star2(fdata_Ga))
+deltaGu = CC(fdata_Gu, k.star2(fdata_Gu))
+deltaH = CC(fdata_H, k.star2(fdata_H))
+deltaR = CC(fdata_R, k.star2(fdata_R))
+# --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+# -------------------------------------------------------
+#-------------------
+save( fdata_S, fdata_M, fdata_B, fdata_C, fdata_Ga, fdata_Gu, fdata_H, fdata_R,
+dataS, dataM, dataB, dataC, dataGa, dataGu, dataH, dataR, basis,
+FF.S , FF.M, FF.B, FF.C, FF.Ga, FF.Gu, FF.H, FF.R,
+p.S, p.M, p.B, p.C, p.Ga, p.Gu, p.H, p.R,
+fpca.S, fpca.M, fpca.B, fpca.C, fpca.Ga, fpca.Gu, fpca.H, fpca.R,
+barpS, barpM, barpB, barpC, barpGa, barpGu, barpH, barpR,
+deltaS, deltaM, deltaB, deltaC, deltaGa, deltaGu, deltaH, deltaR,
+file="Temp.rda")
+print(source('~/Desktop/Shiny Data Example/Dashboard.R')$value)
+fpca.est = function(fdata, ddata){
+fpca = sapply(1:21, function(d) k.star1(fdata, d))
+Fpca = pca.fd(fdata, nharm=21, centerfns=TRUE)
+l = Fpca$values
+tve = sapply(1:21, function(d) sum(l[1:d])/sum(l))
+dat = data.frame(d=1:21, TVE = tve, fPCA=fpca, Year = colnames(ddata)[fpca])
+colnames(dat)[3] = c("fPCA estimate")
+return(dat)
+}
+fpca.S = fpca.est(fdata_S, dataS)
+fpca.M = fpca.est(fdata_M, dataM)
+fpca.B = fpca.est(fdata_B, dataB)
+fpca.C = fpca.est(fdata_C, dataC)
+fpca.Ga = fpca.est(fdata_Ga, dataGa)
+fpca.Gu = fpca.est(fdata_Gu, dataGu)
+fpca.H = fpca.est(fdata_H, dataH)
+fpca.R = fpca.est(fdata_R, dataR)
+# testing the Change
+p.S = Tn.D1(fdata_S, 1000, basis, h=2)
+p.M = Tn.D1(fdata_M, 1000, basis, h=2)
+p.B = Tn.D1(fdata_B, 1000, basis, h=2)
+p.C = Tn.D1(fdata_C, 1000, basis, h=2)
+p.Ga = Tn.D1(fdata_Ga, 1000, basis, h=2)
+p.Gu = Tn.D1(fdata_Gu, 1000, basis, h=2)
+p.H = Tn.D1(fdata_H, 1000, basis, h=2)
+p.R = Tn.D1(fdata_R, 1000, basis, h=2)
+barp = function(fdata, ks){
+change = mean(fdata[(ks+1):ncol(fdata$coefs)])-mean(fdata[1:(ks)])
+pii = function(l){
+Fpca = pca.fd(fdata, nharm=21, centerfns=TRUE)
+v = Fpca$harmonics
+inprod(change,v[l])^2/inprod(change,change)
+}
+p.i = sapply(1:10, function(k) pii(k))
+}
+barpS = barp(fdata_S, k.star2(fdata_S))
+barpM = barp(fdata_M, k.star2(fdata_M))
+barpB = barp(fdata_B, k.star2(fdata_B))
+barpC = barp(fdata_C, k.star2(fdata_C))
+barpGa = barp(fdata_Ga, k.star2(fdata_Ga))
+barpGu = barp(fdata_Gu, k.star2(fdata_Gu))
+barpH = barp(fdata_H, k.star2(fdata_H))
+barpR = barp(fdata_R, k.star2(fdata_R))
+CC = function(fdata, ks){
+change = mean(fdata[(ks+1):ncol(fdata$coefs)])-mean(fdata[1:(ks)])
+change
+}
+deltaS = CC(fdata_S, k.star2(fdata_S))
+deltaM = CC(fdata_M, k.star2(fdata_M))
+deltaB = CC(fdata_B, k.star2(fdata_B))
+deltaC = CC(fdata_C, k.star2(fdata_C))
+deltaGa = CC(fdata_Ga, k.star2(fdata_Ga))
+deltaGu = CC(fdata_Gu, k.star2(fdata_Gu))
+deltaH = CC(fdata_H, k.star2(fdata_H))
+deltaR = CC(fdata_R, k.star2(fdata_R))
+# --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+# --------------------------------------------------------------------------
+# -------------------------------------------------------
+#-------------------
+save( fdata_S, fdata_M, fdata_B, fdata_C, fdata_Ga, fdata_Gu, fdata_H, fdata_R,
+dataS, dataM, dataB, dataC, dataGa, dataGu, dataH, dataR, basis,
+FF.S , FF.M, FF.B, FF.C, FF.Ga, FF.Gu, FF.H, FF.R,
+p.S, p.M, p.B, p.C, p.Ga, p.Gu, p.H, p.R,
+fpca.S, fpca.M, fpca.B, fpca.C, fpca.Ga, fpca.Gu, fpca.H, fpca.R,
+barpS, barpM, barpB, barpC, barpGa, barpGu, barpH, barpR,
+deltaS, deltaM, deltaB, deltaC, deltaGa, deltaGu, deltaH, deltaR,
+file="Temp.rda")
+print(source('~/Desktop/Shiny Data Example/Dashboard.R')$value)
+print(source('~/Desktop/Shiny Data Example/Dashboard.R')$value)
+print(source('~/Desktop/Shiny Data Example/Dashboard.R')$value)
+print(source('~/Desktop/Shiny Data Example/Dashboard.R')$value)
+print(source('~/Desktop/Shiny Data Example/Dashboard.R')$value)
+print(source('~/Desktop/Shiny Data Example/Dashboard.R')$value)
+getwd()
+setwd("~/Desktop/Shiny Data Example")
+getwd()
+print(source('Dashboard.R')$value)

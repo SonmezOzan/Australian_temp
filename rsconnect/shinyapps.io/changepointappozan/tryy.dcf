@@ -1,0 +1,10 @@
+name: tryy
+account: changepointappozan
+server: shinyapps.io
+appId: 151231
+bundleId: 680371
+url: https://changepointappozan.shinyapps.io/tryy/
+when: 1484518797.89824
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: Dashboard.R
